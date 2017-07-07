@@ -24,6 +24,35 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	//   x, y, theta and their uncertainties from GPS) and all weights to 1. 
 	// Add random Gaussian noise to each particle.
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
+	num_particles = 150; // test empirically for tradeoff btw accuraccy & speed
+
+	default_random_engine gen; //random number to sample from our gauss distr.
+
+	//define the gaussian distributions around initial GPS estimates
+	normal_distribution<double> dist_x(x, std[0]);
+	normal_distribution<double> dist_y(y, std[1]);
+	normal_distribution<double> dist_yaw(theta, std[2]);
+
+	for(int i = 0; i < num_particles; i++)
+	{
+		Particle p; // instantiate a single particle
+
+		//set x, y, and yaw as random sample from the gaussian distribution
+		p.x = dist_x(gen);
+		p.y = dist_y(gen);
+		p.theta = dist_yaw(gen);
+		//set initial weight to 1
+		p.weight = 1.0;
+		//set particle id
+		p.id = i;
+
+		//now add particle and its weight to the respective vector
+		particles.push_back(p);
+		weights.push_back(1.0);
+
+	}
+
+	is_initialized = true;
 
 }
 
@@ -32,6 +61,27 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	// NOTE: When adding noise you may find std::normal_distribution and std::default_random_engine useful.
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
+
+
+	//Create gaussians around current position estimate
+	default_random_engine gen;
+	normal_distribution<double> dist_x(x, std[0]);
+	normal_distribution<double> dist_y(y, std[1]);
+	normal_distribution<double> dist_yaw(theta, std[2]);
+
+	//**********************************
+	//******Apply current controls to the latest state estimate to predict state at t+1
+	
+	//Iterate over each particle
+	for(int i = 0, i < num_particles; i++)
+	{
+		//capture values of current state for better readibility
+		double x_t = particles[i].x;
+		double y_t = particles[i].y;
+		double yaw_t = particles[i].theta;
+		
+	}
+
 
 }
 
