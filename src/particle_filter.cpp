@@ -63,7 +63,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
 
 
-	//Create gaussians around current position estimate
+	//Make some noise! AKA Create gaussians around current position estimate
 	default_random_engine gen;
 	normal_distribution<double> dist_x(x, std[0]);
 	normal_distribution<double> dist_y(y, std[1]);
@@ -79,8 +79,28 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 		double x_t = particles[i].x;
 		double y_t = particles[i].y;
 		double yaw_t = particles[i].theta;
-		
-	}
+
+		//predict x and y; depends on whether yaw rate is 0 or not
+		if(fabs(yaw_rate) < 0.0001)
+		{ 	// straight line motion model
+			particles[i].x = x_t + velocity * sin(yaw_t) * delta_t;
+			particles[i].y = y_t + velocity * cos(yaw_t) * delta_t;
+			//yaw does not change in straight line motion
+		} else
+		{
+			//predict yaw at t+1
+			double yaw_t1 = yaw_t + yaw_rate * delta_t;
+			particles[i].x = x_t + velocity / yaw_rate * (sin(yaw_t1) - sin(yaw_t));
+			particles[i].y = y_t + velocity / yaw_rate * (cos(yaw_t) 0 cos(yaw_t1));
+			particles[i].theta = yaw_t1;
+		}
+
+		//add some noise
+		particles[i].x += dist_x(gen);
+		particles[i].y += dist_y(gen);
+		particles[i].theta += dist_yaw(gen);
+
+	} // cout<<"Ended prediction step for a single particle."
 
 
 }
